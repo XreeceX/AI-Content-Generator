@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+</head>
+<body>
+    <h1>AI Content Generator</h1>
+    <input type="text" id="input" placeholder="Enter keywords..." />
+    <button onclick="generateContent()">Generate Content</button>
+    <h2>Generated Content</h2>
+    <div id="output"></div>
+
+    <script>
+        async function generateContent() {
+            // Get user input
+            const input = document.querySelector("#input").value;
+
+            // Make a POST request to the FastAPI backend
+            const response = await fetch("http://127.0.0.1:8000/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ input_text: input })  // Send the input as JSON
+            });
+
+            // Parse the JSON response from the server
+            const data = await response.json();
+
+            // Display the generated content
+            document.querySelector("#output").innerText = data.generated_content;
+        }
+    </script>
+</body>
+</html>
