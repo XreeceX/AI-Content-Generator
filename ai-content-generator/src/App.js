@@ -1,24 +1,35 @@
 import React, { useState } from 'react';
 import 'bulma/css/bulma.min.css';
 
+const API_BASE = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+
 function App() {
   const [prompt, setPrompt] = useState('');
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const generateContent = async () => {
+    if (!prompt.trim()) return;
     setLoading(true);
-    const input = document.querySelector("#input").value;
-    const response = await fetch("http://127.0.0.1:8000/generate", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input_text: input })
-    });
-    const data = await response.json();
-    setContent(data.generated_content);
-    setLoading(false);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input_text: prompt.trim() }),
+      });
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      const data = await response.json();
+      setContent(data.generated_content || '');
+    } catch (err) {
+      setError(err.message || 'Failed to generate content. Is the backend running?');
+      setContent('');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,7 +51,6 @@ function App() {
             <div className="box">
               <label className="label">Enter your prompt</label>
               <textarea
-                id="input"
                 className="textarea"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
@@ -54,6 +64,11 @@ function App() {
               >
                 {loading ? "Generating..." : "Generate Content"}
               </button>
+              {error && (
+                <div className="notification is-danger is-light" style={{ marginTop: '1rem' }} role="alert">
+                  {error}
+                </div>
+              )}
             </div>
 
             {content && (
