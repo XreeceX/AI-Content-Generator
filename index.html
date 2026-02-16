@@ -6,40 +6,32 @@
     <title>AI Content Generator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 </head>
-<body class="p-5">
-    <main class="container">
-        <h1 class="title is-1">AI Content Generator</h1>
-        <div class="field has-addons mb-4">
-            <div class="control is-expanded">
-                <input class="input" type="text" id="input" placeholder="Enter keywords..." aria-label="Input keywords">
-            </div>
-            <div class="control">
-                <button class="button is-primary" onclick="generateContent()">Generate Content</button>
-            </div>
-        </div>
-        <h2 class="subtitle is-5">Generated Content</h2>
-        <div id="output" class="box" role="status" aria-live="polite">Enter keywords and click Generate.</div>
-    </main>
+<body>
+    <h1>AI Content Generator</h1>
+    <input type="text" id="input" placeholder="Enter keywords..." />
+    <button onclick="generateContent()">Generate Content</button>
+    <h2>Generated Content</h2>
+    <div id="output"></div>
 
     <script>
-        const API_BASE = "http://127.0.0.1:8000";
         async function generateContent() {
-            const input = document.querySelector("#input").value.trim();
-            const output = document.querySelector("#output");
-            if (!input) return;
-            output.textContent = "Generating...";
-            try {
-                const response = await fetch(`${API_BASE}/generate`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ input_text: input })
-                });
-                if (!response.ok) throw new Error("Server error: " + response.status);
-                const data = await response.json();
-                output.textContent = data.generated_content || "";
-            } catch (err) {
-                output.textContent = "Error: " + (err.message || "Failed to generate. Is the backend running?");
-            }
+            // Get user input
+            const input = document.querySelector("#input").value;
+
+            // Make a POST request to the FastAPI backend
+            const response = await fetch("http://127.0.0.1:8000/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ input_text: input })  // Send the input as JSON
+            });
+
+            // Parse the JSON response from the server
+            const data = await response.json();
+
+            // Display the generated content
+            document.querySelector("#output").innerText = data.generated_content;
         }
     </script>
 </body>
